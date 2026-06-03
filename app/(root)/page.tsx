@@ -9,13 +9,13 @@ export default function Home() {
       <div className="flex flex-col justify-center items-center my-5">
         <Image src={"/hero.svg"} alt="Hero-Section" height={500} width={500} />
 
-        <h1 className="z-20 text-6xl mt-5 font-extrabold text-center bg-clip-text text-transparent bg-linear-to-r from-rose-500 via-red-500 to-pink-500 dark:from-rose-400 dark:via-red-400 dark:to-pink-400 tracking-tight leading-[1.3] ">
-          Vibe Code With with Intelligence
+        <h1 className="z-20 text-6xl mt-5 font-extrabold text-center bg-clip-text text-transparent bg-linear-to-r from-blue-500 via-blue-200 to-blue-700 dark:from-blue-400 dark:via-red-400 dark:to-blue-400 tracking-tight leading-[1.3] ">
+          Code Canvas Powered With Intelligence
         </h1>
       </div>
 
       <p className="mt-2 text-lg text-center text-gray-600 dark:text-gray-400 px-5 py-10 max-w-2xl">
-        VibeCode Editor is a powerful and intelligent code editor that enhances
+        Code Canvas Editor is a powerful and intelligent code editor that enhances
         your coding experience with advanced features and seamless integration.
         It is designed to help you write, debug, and optimize your code
         efficiently.
