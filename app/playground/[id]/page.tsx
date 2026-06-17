@@ -2,15 +2,45 @@
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { TooltipProvider } from "@/components/ui/tooltip";
+
 import { TemplateFileTree } from "@/features/playground/components/template-file-tree";
 import { useFileExplorer } from "@/features/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/features/playground/hooks/usePlayground";
 import { useParams } from "next/navigation"
+import { toast } from "sonner";
+import {
+  FileText,
+  FolderOpen,
+  AlertCircle,
+  Save,
+  X,
+  Settings,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { useState } from "react";
 const Page = () => {
     const {id} = useParams<{id:string}>();
+    const [isPreviewVisible, setIsPreviewVisible] = useState(true);
     const {playgroundData, templateData, isLoading, error, saveTemplateData}= usePlayground(id)
     const {
       activeFileId,
@@ -31,6 +61,9 @@ const Page = () => {
       setOpenFiles,
   } = useFileExplorer();
 
+  const activeFile = openFiles.find((file) => file.id === activeFileId);
+  const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges);
+
   
   return (
     <TooltipProvider>
@@ -40,12 +73,86 @@ const Page = () => {
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
             <Separator className="mr-2 h-4" orientation="vertical" />
-            <div>
-              <div>
-                {playgroundData?.title || "Code Playground"}
+            <div className="flex flex-1 items-center gap-2">
+              <div className=" flex flex-col items-center flex-1 text-lg font-semibold">
+                <h1 className="text-sm font-medium">
+                    {playgroundData?.title || "Code Playground"}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    {openFiles.length} file(s) open
+                    {hasUnsavedChanges && " • Unsaved changes"}
+                  </p>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSave()}
+                      disabled={!activeFile || !activeFile.hasUnsavedChanges}
+                    >
+                      <Save className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Save (Ctrl+S)</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={()=>{}}
+                      disabled={!hasUnsavedChanges}
+                    >
+                      <Save className="h-4 w-4" /> All
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Save All (Ctrl+Shift+S)</TooltipContent>
+                </Tooltip>
+
+                
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => setIsPreviewVisible(!isPreviewVisible)}
+                    >
+                      {isPreviewVisible ? "Hide" : "Show"} Preview
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={closeAllFiles}>
+                      Close All Files
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           </header>
+          <div className="h-[calc(100vh-4rem)]">
+            {
+              openFiles.length > 0 ? (
+                <div> </div>
+              ):(
+                <div className="flex flex-col h-full items-center justify-center text-muted-foreground gap-4">
+                  <FileText className="h-16 w-16 text-gray-300" />
+                  <div className="text-center">
+                    <p className="text-lg font-medium">No files open</p>
+                    <p className="text-sm text-gray-500">
+                      Select a file from the sidebar to start editing
+                    </p>
+                  </div>
+                </div>
+              )
+            }
+          </div>
         </SidebarInset>
       </>
     </TooltipProvider>
