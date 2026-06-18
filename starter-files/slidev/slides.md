@@ -125,7 +125,7 @@ interface User {
   id: number
   firstName: string
   lastName: string
-  role: string
+  role: string |null
 }
 
 function updateUser(id: number, update: User) {
