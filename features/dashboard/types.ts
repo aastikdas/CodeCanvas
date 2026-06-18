@@ -1,9 +1,9 @@
 export interface User {
     id: string
-    name: string
+    name: string |null
     email: string
-    image: string
-    role: string | null
+    image: string |null
+    role?: string | null
     createdAt: Date
     updatedAt: Date
   }
