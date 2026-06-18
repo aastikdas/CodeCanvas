@@ -74,7 +74,7 @@ interface TemplateFileTreeProps {
   onRenameFolder?: (folder: TemplateFolder, newFolderName: string, parentPath: string) => void
 }
 
-export function TemplateFileTree({
+const TemplateFileTree=({
   data,
   onFileSelect,
   selectedFile,
@@ -85,7 +85,7 @@ export function TemplateFileTree({
   onDeleteFolder,
   onRenameFile,
   onRenameFolder,
-}: TemplateFileTreeProps) {
+}: TemplateFileTreeProps) => {
   const isRootFolder = data && typeof data === "object" && "folderName" in data
   const [isNewFileDialogOpen, setIsNewFileDialogOpen] = React.useState(false)
   const [isNewFolderDialogOpen, setIsNewFolderDialogOpen] = React.useState(false)
