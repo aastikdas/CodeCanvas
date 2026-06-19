@@ -42,6 +42,8 @@ import { TemplateFile } from "@/features/playground/lib/path-to-json";
 import TemplateFileTree from "@/features/playground/components/template-file-tree";
 import PlaygroundEditor from "@/features/playground/components/playground-editor";
 import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer";
+import WebContainerPreview from "@/features/webContainers/components/WebContainerPreview";
+import { Spinner } from "@/components/ui/spinner";
 const Page = () => {
     const {id} = useParams<{id:string}>();
     const [isPreviewVisible, setIsPreviewVisible] = useState(true);
@@ -90,7 +92,62 @@ const Page = () => {
   const handleFileSelect = (file: TemplateFile) => {
     openFile(file);
   };
+   if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-semibold text-red-600 mb-2">
+          Something went wrong
+        </h2>
+        <p className="text-gray-600 mb-4">{error}</p>
+        <Button onClick={() => window.location.reload()} variant="destructive">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <div className="w-full max-w-md p-6 rounded-lg shadow-sm border">
+          <h2 className="text-xl font-semibold mb-6 text-center">
+            Loading Playground
+          </h2>
+          <div className="mb-8 space-y-3">
+            <div className="flex items-center gap-3">
+              <Spinner />
+              <span>Loading playground data</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Spinner />
+              <span>Setting up environment</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Spinner />
+              <span>Ready to code</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // No template data
+  if (!templateData) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
+        <FolderOpen className="h-12 w-12 text-amber-500 mb-4" />
+        <h2 className="text-xl font-semibold text-amber-600 mb-2">
+          No template data available
+        </h2>
+        <Button onClick={() => window.location.reload()} variant="outline">
+          Reload Template
+        </Button>
+      </div>
+    );
+  }
   return (
     <TooltipProvider>
       <>
@@ -231,6 +288,24 @@ const Page = () => {
                             
                           />
                         </ResizablePanel>
+                        {
+                          isPreviewVisible && (
+                            <>
+                            <ResizableHandle>
+                              <ResizablePanel defaultSize={50} />
+                                <WebContainerPreview
+                                  templateData={templateData!}
+                                  instance={instance}
+                                  writeFileSync={writeFileSync}
+                                  isLoading={containerLoading}
+                                  error={containerError}
+                                  serverUrl={serverUrl!}
+                                  forceResetup={false}
+                                />
+                            </ResizableHandle>
+                            </>
+                          )
+                        }
                     </ResizablePanelGroup>
                   </div>
                 </div>
