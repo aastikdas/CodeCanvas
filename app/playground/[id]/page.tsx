@@ -41,6 +41,7 @@ import { useEffect, useState } from "react";
 import { TemplateFile } from "@/features/playground/lib/path-to-json";
 import TemplateFileTree from "@/features/playground/components/template-file-tree";
 import PlaygroundEditor from "@/features/playground/components/playground-editor";
+import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer";
 const Page = () => {
     const {id} = useParams<{id:string}>();
     const [isPreviewVisible, setIsPreviewVisible] = useState(true);
@@ -63,6 +64,15 @@ const Page = () => {
       setPlaygroundId,
       setOpenFiles,
   } = useFileExplorer();
+
+  const {
+    serverUrl,
+    isLoading: containerLoading,
+    error: containerError,
+    instance,
+    writeFileSync,
+  } = useWebContainer({ templateData: templateData as any });
+
 
   useEffect(() => {
     setPlaygroundId(id);
