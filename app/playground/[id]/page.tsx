@@ -46,6 +46,7 @@ import WebContainerPreview from "@/features/webContainers/components/WebContaine
 import { Spinner } from "@/components/ui/spinner";
 import { findFilePath } from "@/features/playground/lib";
 import { TemplateFolder } from "@/features/playground/types";
+import ToggleAI from "@/features/playground/components/toggle-ai";
 const Page = () => {
     const {id} = useParams<{id:string}>();
     const [isPreviewVisible, setIsPreviewVisible] = useState(true);
@@ -386,7 +387,11 @@ const Page = () => {
                   </TooltipTrigger>
                   <TooltipContent>Save All (Ctrl+Shift+S)</TooltipContent>
                 </Tooltip>
-
+              <ToggleAI
+                  isEnabled={true}
+                  onToggle={()=>{}}
+                  suggestionLoading={true}
+                />
                 
 
                 <DropdownMenu>
