@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { WebContainer } from '@webcontainer/api';
-import webContainerService from '@/features/webcontainers/service/webContainerService';
 import { TemplateFolder } from '@/features/playground/lib/path-to-json';
 
 interface UseWebContainerProps {
