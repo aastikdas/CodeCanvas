@@ -53,6 +53,8 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
   loadingProgress = 0,
   activeFeature,
 }) => {
+
+
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Dummy handler for code insertion from AI chat panel
@@ -183,7 +185,17 @@ const activeFile = { name: "example.ts", content: "// file content" };
         </DropdownMenuContent>
       </DropdownMenu>
 
-     
+     <AIChatSidePanel
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        onInsertCode={handleInsertCode}
+        onRunCode={handleRunCode}
+        activeFileName={activeFile?.name}
+        activeFileContent={activeFile?.content}
+        activeFileLanguage="TypeScript" // Assuming TypeScript as the language
+        cursorPosition={cursorPosition}
+        theme="dark"
+      />
     </>
   );
 };
