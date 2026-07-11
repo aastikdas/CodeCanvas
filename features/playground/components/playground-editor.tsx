@@ -14,6 +14,7 @@ interface PlaygroundEditorProps {
     onAcceptSuggestion: (editor: any, monaco: any) => void
     onRejectSuggestion: (editor: any) => void
     onTriggerSuggestion: (type: string, editor: any) => void
+    onEditorMount?: (editor: any, monaco: any) => void
 }
 
 const PlaygroundEditor = ({
@@ -26,100 +27,108 @@ const PlaygroundEditor = ({
     onAcceptSuggestion,
     onRejectSuggestion,
     onTriggerSuggestion,
+    onEditorMount,
 }: PlaygroundEditorProps) => {
     const editorRef = useRef<any>(null)
     const monacoRef = useRef<Monaco | null>(null)
 
-    const inlineCompletionProviderRef = useRef<any>(null)
-    const currentSuggestionRef = useRef<{
-        text: string
-        position: { line: number; column: number }
-        id: string
-    } | null>(null)
-    const isAcceptingSuggestionRef = useRef(false)
-    const suggestionAcceptedRef = useRef(false)
-    const suggestionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const tabCommandRef = useRef<any>(null)
-    const generateSuggestionId = () => `suggestion-${Date.now()}-${Math.random()}`
+  const suggestionRef = useRef<string | null>(null)
+  const suggestionPositionRef = useRef<{ line: number; column: number } | null>(null)
+  const providerDisposablesRef = useRef<any[]>([])
+  const registeredLanguagesRef = useRef<Set<string>>(new Set())
 
-  const createInlineCompletionProvider = useCallback(
-    (monaco: Monaco) => {
-      return {
-        provideInlineCompletions: async (model: any, position: any, context: any, token: any) => {
-          console.log("provideInlineCompletions called", {
-            hasSuggestion: !!suggestion,
-            hasPosition: !!suggestionPosition,
-            currentPos: `${position.lineNumber}:${position.column}`,
-            suggestionPos: suggestionPosition ? `${suggestionPosition.line}:${suggestionPosition.column}` : null,
-            isAccepting: isAcceptingSuggestionRef.current,
-            suggestionAccepted: suggestionAcceptedRef.current,
-          })
-          if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
-            console.log("Skipping completion - already accepting or accepted")
-            return { items: [] }
-          }
+  const registerProviderForLanguage = useCallback((language: string) => {
+    if (!monacoRef.current) return
+    const monaco = monacoRef.current
 
-          if (!suggestion || !suggestionPosition) {
-            console.log("No suggestion or position available")
-            return { items: [] }
-          }
+    if (registeredLanguagesRef.current.has(language)) return
+    registeredLanguagesRef.current.add(language)
 
-          const currentLine = position.lineNumber
-          const currentColumn = position.column
+    console.log(`Registering inline completions provider for language: ${language}`)
+    const provider = {
+      provideInlineCompletions: async (model: any, position: any, context: any, token: any) => {
+        const currentSug = suggestionRef.current
+        const currentPos = suggestionPositionRef.current
 
-          const isPositionMatch =
-            currentLine === suggestionPosition.line &&
-            currentColumn >= suggestionPosition.column &&
-            currentColumn <= suggestionPosition.column + 2 // Small tolerance
+        if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
+          return { items: [] }
+        }
 
-          if (!isPositionMatch) {
-            console.log("Position mismatch", {
-              current: `${currentLine}:${currentColumn}`,
-              expected: `${suggestionPosition.line}:${suggestionPosition.column}`,
-            })
-            return { items: [] }
-          }
+        if (!currentSug || !currentPos) {
+          return { items: [] }
+        }
 
-          const suggestionId = generateSuggestionId()
-          currentSuggestionRef.current = {
-            text: suggestion,
-            position: suggestionPosition,
-            id: suggestionId,
-          }
+        const isPositionMatch =
+          position.lineNumber === currentPos.line &&
+          position.column >= currentPos.column &&
+          position.column <= currentPos.column + 2
 
-          console.log("Providing inline completion", { suggestionId, suggestion: suggestion.substring(0, 50) + "..." })
+        if (!isPositionMatch) {
+          return { items: [] }
+        }
 
-          // Clean the suggestion text (remove \r characters)
-          const cleanSuggestion = suggestion.replace(/\r/g, "")
+        const suggestionId = generateSuggestionId()
+        currentSuggestionRef.current = {
+          text: currentSug,
+          position: currentPos,
+          id: suggestionId,
+        }
 
-          return {
-            items: [
-              {
-                insertText: cleanSuggestion,
-                range: new monaco.Range(
-                  suggestionPosition.line,
-                  suggestionPosition.column,
-                  suggestionPosition.line,
-                  suggestionPosition.column,
-                ),
-                kind: monaco.languages.CompletionItemKind.Snippet,
-                label: "AI Suggestion",
-                detail: "AI-generated code suggestion",
-                documentation: "Press Tab to accept",
-                sortText: "0000", // High priority
-                filterText: "",
-                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              },
-            ],
-          }
-        },
-        freeInlineCompletions: (completions: any) => {
-          console.log("freeInlineCompletions called")
-        },
+        const cleanSuggestion = currentSug.replace(/\r/g, "")
+
+        return {
+          items: [
+            {
+              insertText: cleanSuggestion,
+              range: new monaco.Range(
+                currentPos.line,
+                currentPos.column,
+                currentPos.line,
+                currentPos.column
+              ),
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              label: "AI Suggestion",
+              detail: "AI-generated code suggestion",
+              documentation: "Press Tab to accept",
+              sortText: "0000",
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            },
+          ],
+        }
+      },
+      freeInlineCompletions: () => {}
+    }
+
+    const disposable = monaco.languages.registerInlineCompletionsProvider(language, provider)
+    providerDisposablesRef.current.push(disposable)
+  }, [])
+
+  // Register inline completions provider dynamically when file language changes
+  useEffect(() => {
+    if (activeFile && monacoRef.current) {
+      const language = getEditorLanguage(activeFile.fileExtension || "")
+      registerProviderForLanguage(language)
+    }
+  }, [activeFile, registerProviderForLanguage])
+
+  // Update suggestion refs and trigger suggestions
+  useEffect(() => {
+    suggestionRef.current = suggestion
+    suggestionPositionRef.current = suggestionPosition
+
+    if (suggestion && suggestionPosition && editorRef.current) {
+      if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
+        return
       }
-    },
-    [suggestion, suggestionPosition],
-  )
+      // Small delay to ensure editor is fully ready
+      setTimeout(() => {
+        if (editorRef.current && !isAcceptingSuggestionRef.current && !suggestionAcceptedRef.current) {
+          console.log("Triggering inline suggestions")
+          editorRef.current.trigger("ai", "editor.action.inlineSuggest.trigger", null)
+        }
+      }, 50)
+    }
+  }, [suggestion, suggestionPosition])
 
   const clearCurrentSuggestion = useCallback(() => {
     currentSuggestionRef.current = null
@@ -289,17 +298,15 @@ const PlaygroundEditor = ({
         monacoRef.current = monaco
         console.log("Editor instance mounted:", !!editorRef.current)
 
+        if (onEditorMount) {
+            onEditorMount(editor, monaco)
+        }
+
         editor.updateOptions({
         ...defaultEditorOptions,
         inlineSuggest: {
             enabled: true,
             mode: "prefix",
-            suppressSuggestions: false,
-        },
-        suggest: {
-            preview: false,
-            showInlineDetails: false,
-            insertMode: "replace",
         },
         quickSuggestions: {
             other: true,
@@ -310,6 +317,10 @@ const PlaygroundEditor = ({
         })
 
         configureMonaco(monaco)
+
+        // Register for current language
+        const currentLanguage = getEditorLanguage(activeFile?.fileExtension || "")
+        registerProviderForLanguage(currentLanguage)
 
         // Keyboard shortcuts
         editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, () => {
@@ -354,8 +365,8 @@ const PlaygroundEditor = ({
             console.log("DEFAULT: Using default tab behavior")
             editor.trigger("keyboard", "tab", null)
         },
-        // CRITICAL: Use specific context to override Monaco's built-in Tab handling
-        "editorTextFocus && !editorReadonly && !suggestWidgetVisible",
+        // CRITICAL: Use specific context to override Monaco's built-in Tab handling only when suggestion is visible
+        "editorTextFocus && !editorReadonly && !suggestWidgetVisible && inlineSuggestionVisible",
         )
 
         // Escape to reject
@@ -475,14 +486,14 @@ const PlaygroundEditor = ({
         if (suggestionTimeoutRef.current) {
             clearTimeout(suggestionTimeoutRef.current)
         }
-        if (inlineCompletionProviderRef.current) {
-            inlineCompletionProviderRef.current.dispose()
-            inlineCompletionProviderRef.current = null
-        }
         if (tabCommandRef.current) {
             tabCommandRef.current.dispose()
             tabCommandRef.current = null
         }
+        // Dispose all registered inline completion providers
+        providerDisposablesRef.current.forEach(d => d.dispose())
+        providerDisposablesRef.current = []
+        registeredLanguagesRef.current.clear()
         }
     }, [])
 

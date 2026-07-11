@@ -44,6 +44,10 @@ interface ToggleAIProps {
   suggestionLoading: boolean;
   loadingProgress?: number;
   activeFeature?: string;
+  activeFileName?: string;
+  activeFileContent?: string;
+  cursorPosition?: { line: number; column: number };
+  onInsertCode?: (code: string, fileName?: string, position?: { line: number; column: number }) => void;
 }
 
 const ToggleAI: React.FC<ToggleAIProps> = ({
@@ -52,20 +56,18 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
   suggestionLoading,
   loadingProgress = 0,
   activeFeature,
+  activeFileName,
+  activeFileContent,
+  cursorPosition,
+  onInsertCode,
 }) => {
 
 
   const [isChatOpen, setIsChatOpen] = useState(false);
 
-  // Dummy handler for code insertion from AI chat panel
-  const handleInsertCode = (code: string, fileName?: string, position?: { line: number; column: number }) => {    
-    console.log("Insert code:", { code, fileName, position });
-  };
   const handleRunCode = (code: string, language: string) => {
     console.log("Run code:", { code, language });
   };
-const activeFile = { name: "example.ts", content: "// file content" };
-  const cursorPosition = { line: 1, column: 1 };
 
   return (
     <>
@@ -188,11 +190,11 @@ const activeFile = { name: "example.ts", content: "// file content" };
      <AIChatSidePanel
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        onInsertCode={handleInsertCode}
+        onInsertCode={onInsertCode}
         onRunCode={handleRunCode}
-        activeFileName={activeFile?.name}
-        activeFileContent={activeFile?.content}
-        activeFileLanguage="TypeScript" // Assuming TypeScript as the language
+        activeFileName={activeFileName}
+        activeFileContent={activeFileContent}
+        activeFileLanguage={activeFileName ? activeFileName.split('.').pop() || "TypeScript" : "TypeScript"}
         cursorPosition={cursorPosition}
         theme="dark"
       />

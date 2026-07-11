@@ -72,6 +72,49 @@ const Page = () => {
       setOpenFiles,
   } = useFileExplorer();
 
+  const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
+  const [cursorPosition, setCursorPosition] = useState<{ line: number; column: number }>({ line: 1, column: 1 });
+
+  const handleEditorMount = useCallback((editor: any, monaco: any) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+
+    editor.onDidChangeCursorPosition((e: any) => {
+      setCursorPosition({
+        line: e.position.lineNumber,
+        column: e.position.column,
+      });
+    });
+  }, []);
+
+  const handleInsertCode = useCallback((code: string, fileName?: string, position?: { line: number; column: number }) => {
+    if (!editorRef.current || !monacoRef.current) {
+      toast.error("Editor is not ready yet");
+      return;
+    }
+    const editor = editorRef.current;
+    const monaco = monacoRef.current;
+
+    const pos = position || editor.getPosition();
+    if (!pos) return;
+
+    const lineNumber = pos.lineNumber || pos.line;
+    const column = pos.column;
+
+    const range = new monaco.Range(lineNumber, column, lineNumber, column);
+
+    editor.executeEdits("ai-chat-insert", [
+      {
+        range,
+        text: code,
+        forceMoveMarkers: true,
+      },
+    ]);
+    editor.focus();
+    toast.success("Code inserted successfully");
+  }, []);
+
   const {
     serverUrl,
     isLoading: containerLoading,
@@ -395,6 +438,10 @@ const Page = () => {
                   isEnabled={aiSuggestions.isEnabled}
                   onToggle={aiSuggestions.toggleEnabled}
                   suggestionLoading={aiSuggestions.isLoading}
+                  activeFileName={activeFile ? `${activeFile.filename}.${activeFile.fileExtension}` : undefined}
+                  activeFileContent={activeFile?.content}
+                  cursorPosition={cursorPosition}
+                  onInsertCode={handleInsertCode}
                 />
                 
 
@@ -495,7 +542,7 @@ const Page = () => {
                             onTriggerSuggestion={(type, editor) =>
                               aiSuggestions.fetchSuggestion(type, editor)
                             }
-                            
+                            onEditorMount={handleEditorMount}
                           />
                         </ResizablePanel>
                         {

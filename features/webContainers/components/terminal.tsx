@@ -39,13 +39,9 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   
-  // Command line state
-  const currentLine = useRef<string>("");
-  const cursorPosition = useRef<number>(0);
-  const commandHistory = useRef<string[]>([]);
-  const historyIndex = useRef<number>(-1);
-  const currentProcess = useRef<any>(null);
   const shellProcess = useRef<any>(null);
+  const shellWriter = useRef<any>(null);
+  const terminalOnDataListener = useRef<any>(null);
 
   const terminalThemes = {
     dark: {
@@ -96,14 +92,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
     },
   };
 
-  const writePrompt = useCallback(() => {
-    if (term.current) {
-      term.current.write("\r\n$ ");
-      currentLine.current = "";
-      cursorPosition.current = 0;
-    }
-  }, []);
-
   // Expose methods through ref
   useImperativeHandle(ref, () => ({
     writeToTerminal: (data: string) => {
@@ -120,156 +108,6 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       }
     },
   }));
-
-  const executeCommand = useCallback(async (command: string) => {
-    if (!webContainerInstance || !term.current) return;
-
-    // Add to history
-    if (command.trim() && commandHistory.current[commandHistory.current.length - 1] !== command) {
-      commandHistory.current.push(command);
-    }
-    historyIndex.current = -1;
-
-    try {
-      // Handle built-in commands
-      if (command.trim() === "clear") {
-        term.current.clear();
-        writePrompt();
-        return;
-      }
-
-      if (command.trim() === "history") {
-        commandHistory.current.forEach((cmd, index) => {
-          term.current!.writeln(`  ${index + 1}  ${cmd}`);
-        });
-        writePrompt();
-        return;
-      }
-
-      if (command.trim() === "") {
-        writePrompt();
-        return;
-      }
-
-      // Parse command
-      const parts = command.trim().split(' ');
-      const cmd = parts[0];
-      const args = parts.slice(1);
-
-      // Execute in WebContainer
-      term.current.writeln("");
-      const process = await webContainerInstance.spawn(cmd, args, {
-        terminal: {
-          cols: term.current.cols,
-          rows: term.current.rows,
-        },
-      });
-
-      currentProcess.current = process;
-
-      // Handle process output
-      process.output.pipeTo(new WritableStream({
-        write(data) {
-          if (term.current) {
-            term.current.write(data);
-          }
-        },
-      }));
-
-      // Wait for process to complete
-      const exitCode = await process.exit;
-      currentProcess.current = null;
-
-      // Show new prompt
-      writePrompt();
-
-    } catch (error) {
-      if (term.current) {
-        term.current.writeln(`\r\nCommand not found: ${command}`);
-        writePrompt();
-      }
-      currentProcess.current = null;
-    }
-  }, [webContainerInstance, writePrompt]);
-
-  const handleTerminalInput = useCallback((data: string) => {
-    if (!term.current) return;
-
-    // Handle special characters
-    switch (data) {
-      case '\r': // Enter
-        executeCommand(currentLine.current);
-        break;
-        
-      case '\u007F': // Backspace
-        if (cursorPosition.current > 0) {
-          currentLine.current = 
-            currentLine.current.slice(0, cursorPosition.current - 1) + 
-            currentLine.current.slice(cursorPosition.current);
-          cursorPosition.current--;
-          
-          // Update terminal display
-          term.current.write('\b \b');
-        }
-        break;
-        
-      case '\u0003': // Ctrl+C
-        if (currentProcess.current) {
-          currentProcess.current.kill();
-          currentProcess.current = null;
-        }
-        term.current.writeln("^C");
-        writePrompt();
-        break;
-        
-      case '\u001b[A': // Up arrow
-        if (commandHistory.current.length > 0) {
-          if (historyIndex.current === -1) {
-            historyIndex.current = commandHistory.current.length - 1;
-          } else if (historyIndex.current > 0) {
-            historyIndex.current--;
-          }
-          
-          // Clear current line and write history command
-          const historyCommand = commandHistory.current[historyIndex.current];
-          term.current.write('\r$ ' + ' '.repeat(currentLine.current.length) + '\r$ ');
-          term.current.write(historyCommand);
-          currentLine.current = historyCommand;
-          cursorPosition.current = historyCommand.length;
-        }
-        break;
-        
-      case '\u001b[B': // Down arrow
-        if (historyIndex.current !== -1) {
-          if (historyIndex.current < commandHistory.current.length - 1) {
-            historyIndex.current++;
-            const historyCommand = commandHistory.current[historyIndex.current];
-            term.current.write('\r$ ' + ' '.repeat(currentLine.current.length) + '\r$ ');
-            term.current.write(historyCommand);
-            currentLine.current = historyCommand;
-            cursorPosition.current = historyCommand.length;
-          } else {
-            historyIndex.current = -1;
-            term.current.write('\r$ ' + ' '.repeat(currentLine.current.length) + '\r$ ');
-            currentLine.current = "";
-            cursorPosition.current = 0;
-          }
-        }
-        break;
-        
-      default:
-        // Regular character input
-        if (data >= ' ' || data === '\t') {
-          currentLine.current = 
-            currentLine.current.slice(0, cursorPosition.current) + 
-            data + 
-            currentLine.current.slice(cursorPosition.current);
-          cursorPosition.current++;
-          term.current.write(data);
-        }
-        break;
-    }
-  }, [executeCommand, writePrompt]);
 
   const initializeTerminal = useCallback(() => {
     if (!terminalRef.current || term.current) return;
@@ -302,44 +140,83 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
     searchAddon.current = searchAddonInstance;
     term.current = terminal;
 
-    // Handle terminal input
-    terminal.onData(handleTerminalInput);
-
     // Initial fit
     setTimeout(() => {
       fitAddonInstance.fit();
     }, 100);
 
-    // Welcome message
-    terminal.writeln("🚀 WebContainer Terminal");
-    terminal.writeln("Type 'help' for available commands");
-    writePrompt();
-
     return terminal;
-  }, [theme, handleTerminalInput, writePrompt]);
+  }, [theme]);
 
   const connectToWebContainer = useCallback(async () => {
     if (!webContainerInstance || !term.current) return;
 
     try {
+      // Clear initial/welcome logs once container is ready to spawn shell
+      term.current.clear();
+
+      const process = await webContainerInstance.spawn("jsh", [], {
+        terminal: {
+          cols: term.current.cols || 80,
+          rows: term.current.rows || 24,
+        }
+      });
+
+      shellProcess.current = process;
       setIsConnected(true);
-      term.current.writeln("✅ Connected to WebContainer");
-      term.current.writeln("Ready to execute commands");
-      writePrompt();
+
+      // Pipe shell output directly to xterm
+      process.output.pipeTo(new WritableStream({
+        write(data) {
+          term.current?.write(data);
+        }
+      })).catch(err => {
+        console.error("Shell output stream error:", err);
+      });
+
+      // Get shell input writer and pipe xterm input to it
+      const writer = process.input.getWriter();
+      shellWriter.current = writer;
+
+      if (terminalOnDataListener.current) {
+        terminalOnDataListener.current.dispose();
+      }
+
+      terminalOnDataListener.current = term.current.onData((data) => {
+        writer.write(data).catch(err => {
+          console.error("Failed to write to shell input:", err);
+        });
+      });
+
+      process.exit.then((code) => {
+        setIsConnected(false);
+        term.current?.writeln(`\r\nSession ended with exit code ${code}`);
+        shellProcess.current = null;
+        shellWriter.current = null;
+        if (terminalOnDataListener.current) {
+          terminalOnDataListener.current.dispose();
+          terminalOnDataListener.current = null;
+        }
+      });
+
     } catch (error) {
       setIsConnected(false);
       term.current.writeln("❌ Failed to connect to WebContainer");
       console.error("WebContainer connection error:", error);
     }
-  }, [webContainerInstance, writePrompt]);
+  }, [webContainerInstance]);
 
   const clearTerminal = useCallback(() => {
     if (term.current) {
       term.current.clear();
-      term.current.writeln("🚀 WebContainer Terminal");
-      writePrompt();
+      // Send Form Feed / Ctrl+L to clear screen and redraw shell prompt
+      if (shellWriter.current) {
+        shellWriter.current.write("\x0c").catch(err => {
+          console.error("Failed to clear terminal process prompt:", err);
+        });
+      }
     }
-  }, [writePrompt]);
+  }, []);
 
   const copyTerminalContent = useCallback(async () => {
     if (term.current) {
@@ -390,6 +267,16 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       if (fitAddon.current) {
         setTimeout(() => {
           fitAddon.current?.fit();
+          if (term.current && shellProcess.current) {
+            try {
+              shellProcess.current.resize({
+                cols: term.current.cols,
+                rows: term.current.rows,
+              });
+            } catch (err) {
+              console.warn("Failed to resize shell process:", err);
+            }
+          }
         }, 100);
       }
     });
@@ -400,11 +287,18 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
 
     return () => {
       resizeObserver.disconnect();
-      if (currentProcess.current) {
-        currentProcess.current.kill();
+      if (terminalOnDataListener.current) {
+        terminalOnDataListener.current.dispose();
+      }
+      if (shellWriter.current) {
+        try {
+          shellWriter.current.releaseLock();
+        } catch (e) {}
       }
       if (shellProcess.current) {
-        shellProcess.current.kill();
+        try {
+          shellProcess.current.kill();
+        } catch (e) {}
       }
       if (term.current) {
         term.current.dispose();
