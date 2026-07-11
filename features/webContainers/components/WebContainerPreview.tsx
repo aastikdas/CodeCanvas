@@ -164,11 +164,39 @@ const WebContainerPreview: React.FC<WebContainerPreviewProps> = ({
         }));
         setCurrentStep(4);
 
+        // Detect appropriate start script
+        let startScript = "start";
+        try {
+          const pkgFile = templateData.items.find(
+            (item): item is any => 
+              !("folderName" in item) && 
+              item.filename === "package" && 
+              item.fileExtension === "json"
+          );
+          if (pkgFile?.content) {
+            const pkg = JSON.parse(pkgFile.content);
+            if (pkg.scripts) {
+              if (pkg.scripts.dev) {
+                startScript = "dev";
+              } else if (pkg.scripts.start) {
+                startScript = "start";
+              } else {
+                const scriptKeys = Object.keys(pkg.scripts);
+                if (scriptKeys.length > 0) {
+                  startScript = scriptKeys[0];
+                }
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Failed to detect startup script:", error);
+        }
+
         if (terminalRef.current?.writeToTerminal) {
-          terminalRef.current.writeToTerminal("🚀 Starting development server...\r\n");
+          terminalRef.current.writeToTerminal(`🚀 Starting development server (npm run ${startScript})...\r\n`);
         }
         
-        const startProcess = await instance.spawn("npm", ["run", "start"]);
+        const startProcess = await instance.spawn("npm", ["run", startScript]);
 
         instance.on("server-ready", (port: number, url: string) => {
           console.log(`Server ready on port ${port} at ${url}`);

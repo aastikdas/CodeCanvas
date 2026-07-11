@@ -113,16 +113,16 @@ const Page = () => {
 
   const wrappedHandleDeleteFile = useCallback(
     (file: TemplateFile, parentPath: string) => {
-      return handleDeleteFile(file, parentPath, saveTemplateData);
+      return handleDeleteFile(file, parentPath, instance, saveTemplateData);
     },
-    [handleDeleteFile, saveTemplateData]
+    [handleDeleteFile, instance, saveTemplateData]
   );
 
   const wrappedHandleDeleteFolder = useCallback(
     (folder: TemplateFolder, parentPath: string) => {
-      return handleDeleteFolder(folder, parentPath, saveTemplateData);
+      return handleDeleteFolder(folder, parentPath, instance, saveTemplateData);
     },
-    [handleDeleteFolder, saveTemplateData]
+    [handleDeleteFolder, instance, saveTemplateData]
   );
 
   const wrappedHandleRenameFile = useCallback(
@@ -137,10 +137,11 @@ const Page = () => {
         newFilename,
         newExtension,
         parentPath,
+        instance,
         saveTemplateData
       );
     },
-    [handleRenameFile, saveTemplateData]
+    [handleRenameFile, instance, saveTemplateData]
   );
 
   const wrappedHandleRenameFolder = useCallback(
@@ -149,10 +150,11 @@ const Page = () => {
         folder,
         newFolderName,
         parentPath,
+        instance,
         saveTemplateData
       );
     },
-    [handleRenameFolder, saveTemplateData]
+    [handleRenameFolder, instance, saveTemplateData]
   );
 
   const activeFile = openFiles.find((file) => file.id === activeFileId);
@@ -367,7 +369,7 @@ const Page = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={()=>handleSave}
+                      onClick={() => handleSave()}
                       disabled={!activeFile || !activeFile.hasUnsavedChanges}
                     >
                       <Save className="h-4 w-4" />
@@ -381,7 +383,7 @@ const Page = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={()=>handleSaveAll}
+                      onClick={() => handleSaveAll()}
                       disabled={!hasUnsavedChanges}
                     >
                       <Save className="h-4 w-4" /> All
@@ -499,8 +501,8 @@ const Page = () => {
                         {
                           isPreviewVisible && (
                             <>
-                            <ResizableHandle>
-                              <ResizablePanel defaultSize={50} />
+                              <ResizableHandle />
+                              <ResizablePanel defaultSize={50}>
                                 <WebContainerPreview
                                   templateData={templateData!}
                                   instance={instance}
@@ -510,7 +512,7 @@ const Page = () => {
                                   serverUrl={serverUrl!}
                                   forceResetup={false}
                                 />
-                            </ResizableHandle>
+                              </ResizablePanel>
                             </>
                           )
                         }

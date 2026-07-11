@@ -54,6 +54,7 @@ enum Templates {
   NEXTJS
   EXPRESS
   VUE
+  HONO
   ANGULAR
 }
 

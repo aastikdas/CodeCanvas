@@ -71,14 +71,14 @@ export async function longPoll<T>(
  */
 export const generateFileId = (file: TemplateFile, rootFolder: TemplateFolder): string => {
   // Find the file's path in the folder structure
-  const path = findFilePath(file, rootFolder)?.replace(/^\/+/, '') || '';
+  const path = findFilePath(file, rootFolder)?.replace(/^\/+/, '');
   
-  // Handle empty/undefined file extension
+  if (path) {
+    return path;
+  }
+
+  // Fallback if not found in rootFolder yet (e.g., newly created file)
   const extension = file.fileExtension?.trim();
   const extensionSuffix = extension ? `.${extension}` : '';
-
-  // Combine path and filename
-  return path
-    ? `${path}/${file.filename}${extensionSuffix}`
-    : `${file.filename}${extensionSuffix}`;
+  return `${file.filename}${extensionSuffix}`;
 }

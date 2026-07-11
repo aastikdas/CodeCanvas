@@ -38,11 +38,13 @@ interface FileExplorerState {
     handleDeleteFile: (
         file: TemplateFile,
         parentPath: string,
+        instance: any,
         saveTemplateData: (data: TemplateFolder) => Promise<void>
     ) => Promise<void>;
     handleDeleteFolder: (
         folder: TemplateFolder,
         parentPath: string,
+        instance: any,
         saveTemplateData: (data: TemplateFolder) => Promise<void>
     ) => Promise<void>;
     handleRenameFile: (
@@ -50,12 +52,14 @@ interface FileExplorerState {
         newFilename: string,
         newExtension: string,
         parentPath: string,
+        instance: any,
         saveTemplateData: (data: TemplateFolder) => Promise<void>
     ) => Promise<void>;
     handleRenameFolder: (
         folder: TemplateFolder,
         newFolderName: string,
         parentPath: string,
+        instance: any,
         saveTemplateData: (data: TemplateFolder) => Promise<void>
     ) => Promise<void>;
     updateFileContent: (fileId: string, content: string) => void;
@@ -223,7 +227,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-  handleDeleteFile: async (file, parentPath, saveTemplateData) => {
+  handleDeleteFile: async (file, parentPath, instance, saveTemplateData) => {
     const { templateData, openFiles } = get();
     if (!templateData) return;
 
@@ -264,6 +268,15 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
 
       // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
+
+      // Sync with web container
+      if (instance && instance.fs) {
+        const filePath = parentPath
+          ? `${parentPath}/${file.filename}.${file.fileExtension}`
+          : `${file.filename}.${file.fileExtension}`;
+        await instance.fs.rm(filePath, { force: true });
+      }
+
       toast.success(`Deleted file: ${file.filename}.${file.fileExtension}`);
     } catch (error) {
       console.error("Error deleting file:", error);
@@ -271,7 +284,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-  handleDeleteFolder: async (folder, parentPath, saveTemplateData) => {
+  handleDeleteFolder: async (folder, parentPath, instance, saveTemplateData) => {
     const { templateData } = get();
     if (!templateData) return;
 
@@ -316,6 +329,15 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
 
       // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
+
+      // Sync with web container
+      if (instance && instance.fs) {
+        const folderPath = parentPath
+          ? `${parentPath}/${folder.folderName}`
+          : folder.folderName;
+        await instance.fs.rm(folderPath, { recursive: true, force: true });
+      }
+
       toast.success(`Deleted folder: ${folder.folderName}`);
     } catch (error) {
       console.error("Error deleting folder:", error);
@@ -328,6 +350,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     newFilename,
     newExtension,
     parentPath,
+    instance,
     saveTemplateData
   ) => {
     const { templateData, openFiles, activeFileId } = get();
@@ -389,6 +412,18 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
 
         // Use the passed saveTemplateData function
         await saveTemplateData(updatedTemplateData);
+
+        // Sync with web container
+        if (instance && instance.fs) {
+          const oldPath = parentPath
+            ? `${parentPath}/${file.filename}.${file.fileExtension}`
+            : `${file.filename}.${file.fileExtension}`;
+          const newPath = parentPath
+            ? `${parentPath}/${newFilename}.${newExtension}`
+            : `${newFilename}.${newExtension}`;
+          await instance.fs.rename(oldPath, newPath);
+        }
+
         toast.success(`Renamed file to: ${newFilename}.${newExtension}`);
       }
     } catch (error) {
@@ -397,7 +432,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     }
   },
 
-  handleRenameFolder: async (folder, newFolderName, parentPath, saveTemplateData) => {
+  handleRenameFolder: async (folder, newFolderName, parentPath, instance, saveTemplateData) => {
     const { templateData } = get();
     if (!templateData) return;
 
@@ -432,6 +467,18 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
 
         // Use the passed saveTemplateData function
         await saveTemplateData(updatedTemplateData);
+
+        // Sync with web container
+        if (instance && instance.fs) {
+          const oldPath = parentPath
+            ? `${parentPath}/${folder.folderName}`
+            : folder.folderName;
+          const newPath = parentPath
+            ? `${parentPath}/${newFolderName}`
+            : newFolderName;
+          await instance.fs.rename(oldPath, newPath);
+        }
+
         toast.success(`Renamed folder to: ${newFolderName}`);
       }
     } catch (error) {
