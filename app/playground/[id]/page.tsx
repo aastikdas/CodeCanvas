@@ -7,6 +7,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { useFileExplorer } from "@/features/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/features/playground/hooks/usePlayground";
 import { useParams } from "next/navigation"
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   FileText,
@@ -15,6 +16,7 @@ import {
   Save,
   X,
   Settings,
+  ChevronLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -394,6 +396,23 @@ const Page = () => {
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
             <SidebarTrigger className="-ml-1" />
+            <Separator className="mr-2 h-4" orientation="vertical" />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  asChild
+                >
+                  <Link href="/dashboard">
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="sr-only">Back to Dashboard</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Back to Dashboard</TooltipContent>
+            </Tooltip>
             <Separator className="mr-2 h-4" orientation="vertical" />
             <div className="flex flex-1 items-center gap-2">
               <div className=" flex flex-col items-center flex-1 text-lg font-semibold">

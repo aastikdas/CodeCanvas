@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getAIService } from "@/lib/ai-provider"
 
 interface CodeSuggestionRequest {
   fileContent: string
@@ -129,27 +130,13 @@ Generate suggestion:`
  */
 async function generateSuggestion(prompt: string): Promise<string> {
   try {
-    // Replace this with your actual AI service call
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "codellama:latest",
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          max_tokens: 300,
-        },
-      }),
+    const aiService = getAIService()
+    const response = await aiService.generateText(prompt, {
+      temperature: 0.7,
+      maxTokens: 300,
     })
 
-    if (!response.ok) {
-      throw new Error(`AI service error: ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    let suggestion = data.response
+    let suggestion = response
 
     // Clean up the suggestion
     if (suggestion.includes("```")) {

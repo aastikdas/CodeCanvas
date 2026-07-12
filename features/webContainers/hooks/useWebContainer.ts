@@ -15,6 +15,8 @@ interface UseWebContainerReturn {
     destroy: () => void;
 }
 
+let bootPromise: Promise<WebContainer> | null = null;
+
 export const useWebContainer = ({
     templateData,
 }: UseWebContainerProps): UseWebContainerReturn => {
@@ -28,7 +30,10 @@ export const useWebContainer = ({
 
         async function initializeWebContainer() {
             try {
-                const webcontainerInstance = await WebContainer.boot();
+                if (!bootPromise) {
+                    bootPromise = WebContainer.boot();
+                }
+                const webcontainerInstance = await bootPromise;
 
                 if (!mounted) return;
 
@@ -36,6 +41,7 @@ export const useWebContainer = ({
                 setIsLoading(false);
             } catch (err) {
                 console.error('Failed to initialize WebContainer:', err);
+                bootPromise = null;
 
                 if (mounted) {
                     setError(
@@ -88,6 +94,7 @@ export const useWebContainer = ({
 
     const destroy = useCallback(() => {
         instance?.teardown();
+        bootPromise = null;
         setInstance(null);
         setServerUrl(null);
     }, [instance]);

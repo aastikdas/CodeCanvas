@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getAIService } from "@/lib/ai-provider"
 
 interface ChatMessage {
   role: "user" | "assistant"
@@ -33,40 +34,15 @@ Keep responses concise but comprehensive. Use code blocks with language specific
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "codellama:latest",
-        prompt,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 1000,
-          num_predict: 1000,
-          repeat_penalty: 1.1,
-          context_length: 4096,
-        },
-      }),
+    const aiService = getAIService()
+    const response = await aiService.generateText(prompt, {
+      temperature: 0.7,
+      maxTokens: 1000,
       signal: controller.signal,
     })
 
     clearTimeout(timeoutId)
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error("Error from AI model API:", errorText)
-      throw new Error(`AI model API error: ${response.status} - ${errorText}`)
-    }
-
-    const data = await response.json()
-    if (!data.response) {
-      throw new Error("No response from AI model")
-    }
-    return data.response.trim()
+    return response.trim()
   } catch (error) {
     clearTimeout(timeoutId)
     if ((error as Error).name === "AbortError") {
@@ -94,28 +70,12 @@ Enhanced prompt should:
 Return only the enhanced prompt, nothing else.`
 
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "codellama:latest",
-        prompt: enhancementPrompt,
-        stream: false,
-        options: {
-          temperature: 0.3,
-          max_tokens: 500,
-        },
-      }),
+    const aiService = getAIService()
+    const response = await aiService.generateText(enhancementPrompt, {
+      temperature: 0.3,
+      maxTokens: 500,
     })
-
-    if (!response.ok) {
-      throw new Error("Failed to enhance prompt")
-    }
-
-    const data = await response.json()
-    return data.response?.trim() || request.prompt
+    return response.trim()
   } catch (error) {
     console.error("Prompt enhancement error:", error)
     return request.prompt // Return original if enhancement fails

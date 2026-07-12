@@ -1,47 +1,41 @@
 import Link from "next/link";
-import { Cat } from "lucide-react";
-import Image from "next/image";
-
-interface ProjectLink {
-  href: string | null;
-  text: string;
-  description: string;
-  icon: string;
-  iconDark?: string;
-  isNew?: boolean;
-}
+import { Github, Mail, Heart } from "lucide-react";
 
 export function Footer() {
-  const socialLinks = [
-    {
-      href: "#",
-      icon: (
-        <Cat className="w-5 h-5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors" />
-      ),
-    },
-  ];
-
   return (
-    <footer className="border-t border-zinc-200 dark:border-zinc-800">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8 flex flex-col items-center space-y-6 text-center">
-        {/* Social Links */}
-        <div className="flex gap-4">
-          {socialLinks.map((link, index) => (
-            <Link
-              key={index}
-              href={link.href || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {link.icon}
-            </Link>
-          ))}
+    <footer className="border-t border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/20">
+      <div className="mx-auto max-w-7xl px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex flex-col items-center sm:items-start gap-2">
+          <span className="font-extrabold text-lg tracking-tight text-foreground">Code Canvas</span>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            &copy; {new Date().getFullYear()} Code Canvas. All rights reserved.
+          </p>
         </div>
 
-        {/* Copyright Notice */}
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          &copy; {new Date().getFullYear()} Code Canvas. All rights reserved.
-        </p>
+        <div className="flex items-center gap-6">
+          <Link
+            href="https://github.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 text-sm"
+          >
+            <Github className="w-4 h-4" />
+            <span>GitHub</span>
+          </Link>
+          <a
+            href="mailto:support@codecanvas.com"
+            className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 text-sm"
+          >
+            <Mail className="w-4 h-4" />
+            <span>Contact Email</span>
+          </a>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <span>Built with</span>
+          <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500 animate-pulse" />
+          <span>for developers</span>
+        </div>
       </div>
     </footer>
   );

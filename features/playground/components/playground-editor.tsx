@@ -37,6 +37,17 @@ const PlaygroundEditor = ({
   const providerDisposablesRef = useRef<any[]>([])
   const registeredLanguagesRef = useRef<Set<string>>(new Set())
 
+  const currentSuggestionRef = useRef<{
+      text: string
+      position: { line: number; column: number }
+      id: string
+  } | null>(null)
+  const isAcceptingSuggestionRef = useRef(false)
+  const suggestionAcceptedRef = useRef(false)
+  const suggestionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const tabCommandRef = useRef<any>(null)
+  const generateSuggestionId = () => `suggestion-${Date.now()}-${Math.random()}`
+
   const registerProviderForLanguage = useCallback((language: string) => {
     if (!monacoRef.current) return
     const monaco = monacoRef.current
@@ -235,61 +246,6 @@ const PlaygroundEditor = ({
       position.column <= suggestion.position.column + 2
     )
   }, [])
-
-  // Update inline completions when suggestion changes
-  useEffect(() => {
-    if (!editorRef.current || !monacoRef.current) return
-
-    const editor = editorRef.current
-    const monaco = monacoRef.current
-
-    console.log("Suggestion changed", {
-      hasSuggestion: !!suggestion,
-      hasPosition: !!suggestionPosition,
-      isAccepting: isAcceptingSuggestionRef.current,
-      suggestionAccepted: suggestionAcceptedRef.current,
-    })
-
-    // Don't update if we're in the middle of accepting a suggestion
-    if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
-      console.log("Skipping update - currently accepting/accepted suggestion")
-      return
-    }
-
-    // Dispose previous provider
-    if (inlineCompletionProviderRef.current) {
-      inlineCompletionProviderRef.current.dispose()
-      inlineCompletionProviderRef.current = null
-    }
-
-    // Clear current suggestion reference
-    currentSuggestionRef.current = null
-
-    // Register new provider if we have a suggestion
-    if (suggestion && suggestionPosition) {
-      console.log("Registering new inline completion provider")
-
-      const language = getEditorLanguage(activeFile?.fileExtension || "")
-      const provider = createInlineCompletionProvider(monaco)
-
-      inlineCompletionProviderRef.current = monaco.languages.registerInlineCompletionsProvider(language, provider)
-
-      // Small delay to ensure editor is ready, then trigger suggestions
-      setTimeout(() => {
-        if (editorRef.current && !isAcceptingSuggestionRef.current && !suggestionAcceptedRef.current) {
-          console.log("Triggering inline suggestions")
-          editor.trigger("ai", "editor.action.inlineSuggest.trigger", null)
-        }
-      }, 50)
-    }
-
-    return () => {
-      if (inlineCompletionProviderRef.current) {
-        inlineCompletionProviderRef.current.dispose()
-        inlineCompletionProviderRef.current = null
-      }
-    }
-  }, [suggestion, suggestionPosition, activeFile, createInlineCompletionProvider])
 
     
 

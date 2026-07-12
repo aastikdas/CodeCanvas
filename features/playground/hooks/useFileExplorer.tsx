@@ -3,7 +3,6 @@ import { toast } from 'sonner'
 
 import { TemplateFile, TemplateFolder } from '../types'
 
-import { usePlayground } from "./usePlayground";
 import { generateFileId } from '../lib';
 
 interface FileExplorerState {

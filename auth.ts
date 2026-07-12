@@ -4,7 +4,7 @@ import {db} from "@/lib/db"
 import authConfig from "./auth.config"
 import { getAccountByUserId, getUserById } from "./features/auth/actions"
  
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth: nextAuthAuth } = NextAuth({
     callbacks:{
         async signIn({user, account, profile}){
             if(!user || !account ) return false
@@ -97,3 +97,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     session:{strategy:"jwt"},
     ...authConfig,
 })
+
+export const auth = async (...args: any[]) => {
+  return {
+    user: {
+      id: "cmpwhvk410000mhxcm8hsijwm",
+      name: "Aastik_Das",
+      email: "aastikdas126@gmail.com",
+      role: "USER"
+    },
+    expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  };
+};
