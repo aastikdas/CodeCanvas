@@ -12,7 +12,7 @@ import authConfig from "./auth.config";
 const { auth } = NextAuth(authConfig);
 
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const { nextUrl } = req;
   const isLoggedIn = true; // Bypassed for local runtime testing
 
@@ -39,6 +39,8 @@ export default auth((req) => {
 
   return null
 });
+
+export default proxy;
 
 export const config = {
   // copied from clerk

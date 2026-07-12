@@ -36,8 +36,8 @@ export async function GET(request:NextRequest, {params}:{params:Promise<{id:stri
     return Response.json({ error: "Invalid template" }, { status: 404 });
   }
   try {
-    const inputPath = path.join(process.cwd(), templatePath);
-    const outputFile = path.join(process.cwd(), `output/${templateKey}.json`);
+    const inputPath = path.join(/*turbopackIgnore: true*/ process.cwd(), templatePath);
+    const outputFile = path.join(/*turbopackIgnore: true*/ process.cwd(), `output/${templateKey}.json`);
 
     // console.log("Input Path:", inputPath);
     // console.log("Output Path:", outputFile);

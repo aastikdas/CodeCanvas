@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, Mail, Heart } from "lucide-react";
+import { CatIcon, Mail, Heart } from "lucide-react";
 
 export function Footer() {
   return (
@@ -19,7 +19,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 text-sm"
           >
-            <Github className="w-4 h-4" />
+            <CatIcon className="w-4 h-4" />
             <span>GitHub</span>
           </Link>
           <a
