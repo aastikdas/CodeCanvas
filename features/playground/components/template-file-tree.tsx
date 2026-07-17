@@ -47,19 +47,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import TemplateNode from "./template-node"
 
-interface TemplateFile {
-  filename: string
-  fileExtension: string
-  content: string
-}
-
-interface TemplateFolder {
-  folderName: string
-  items: (TemplateFile | TemplateFolder)[]
-}
-
-// Union type for items in the file system
-type TemplateItem = TemplateFile | TemplateFolder
+import { TemplateFile, TemplateFolder, TemplateItem } from "@/features/playground/types"
 
 interface TemplateFileTreeProps {
   data: TemplateItem

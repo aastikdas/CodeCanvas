@@ -14,6 +14,9 @@ export interface TemplateFolder {
   items: (TemplateFile | TemplateFolder)[];
 }
 
+export type TemplateItem = TemplateFile | TemplateFolder;
+
+
 export interface LoadingStepProps {
   currentStep: number;
   step: number;

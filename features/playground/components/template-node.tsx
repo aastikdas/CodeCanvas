@@ -60,21 +60,9 @@ interface TemplateNodeProps {
     onRenameFile?: (file: TemplateFile, newFilename: string, newExtension: string, parentPath: string) => void
     onRenameFolder?: (folder: TemplateFolder, newFolderName: string, parentPath: string) => void
 }
-interface TemplateFile {
-    filename: string
-    fileExtension: string
-    content: string
-}
+import { TemplateFile, TemplateFolder, TemplateItem } from "@/features/playground/types"
 
-interface TemplateFolder {
-    folderName: string
-    items: (TemplateFile | TemplateFolder)[]
-}
-
-// Union type for items in the file system
-type TemplateItem = TemplateFile | TemplateFolder
-
-const TemplateNode = ({ item, onFileSelect, selectedFile, level, path, onAddFile, onAddFolder, onDeleteFile, onDeleteFolder, onRenameFile, onRenameFolder }: TemplateNodeProps) => {
+const TemplateNode = ({ item, onFileSelect, selectedFile, level, path = "", onAddFile, onAddFolder, onDeleteFile, onDeleteFolder, onRenameFile, onRenameFolder }: TemplateNodeProps) => {
     const isValidItem = item && typeof item === "object"
     const isFolder = isValidItem && "folderName" in item
     const [isOpen, setIsOpen] = React.useState(level < 2)

@@ -1,7 +1,7 @@
 "use server"
 import { currentUser } from "@/features/auth/actions";
 import { db } from "@/lib/db"
-import { TemplateFolder } from "../lib/path-to-json";
+import { TemplateFolder } from "../types";
 import { revalidatePath } from "next/cache";
 
 
@@ -15,7 +15,7 @@ export const toggleStarMarked = async (playgroundId: string, isChecked: boolean)
 
   try {
     if (isChecked) {
-      await db.starMark.create({
+      await db.starmark.create({
         data: {
           userId: userId!,
           playgroundId,
@@ -23,13 +23,10 @@ export const toggleStarMarked = async (playgroundId: string, isChecked: boolean)
         },
       });
     } else {
-      await db.starMark.delete({
+      await db.starmark.deleteMany({
         where: {
-          userId_playgroundId: {
-            userId,
-            playgroundId: playgroundId,
-
-          },
+          userId,
+          playgroundId,
         },
       });
     }
@@ -98,6 +95,7 @@ export const getPlaygroundById = async (id:string)=>{
         const playground = await db.playground.findUnique({
             where:{id},
             select:{
+                id:true,
                 title:true,
                 description:true,
               templateFiles:{

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { toast } from 'sonner'
-import { TemplateFolder } from "../lib/path-to-json"
+import { TemplateFolder } from "../types"
 import { getPlaygroundById, SaveUpdatedCode } from "../actions"
 
 interface PlaygroundData {
@@ -32,7 +32,7 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
             setError(null);
             const data = await getPlaygroundById(id)
 
-            setPlaygroundData(data);
+            setPlaygroundData(data || null);
             const rawContent = data?.templateFiles?.[0]?.content;
 
             if(typeof rawContent==="string"){

@@ -170,7 +170,7 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
         write(data) {
           term.current?.write(data);
         }
-      })).catch(err => {
+      })).catch((err: any) => {
         console.error("Shell output stream error:", err);
       });
 
@@ -183,12 +183,12 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       }
 
       terminalOnDataListener.current = term.current.onData((data) => {
-        writer.write(data).catch(err => {
+        writer.write(data).catch((err: any) => {
           console.error("Failed to write to shell input:", err);
         });
       });
 
-      process.exit.then((code) => {
+      process.exit.then((code: number) => {
         setIsConnected(false);
         term.current?.writeln(`\r\nSession ended with exit code ${code}`);
         shellProcess.current = null;
@@ -211,7 +211,7 @@ const TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       term.current.clear();
       // Send Form Feed / Ctrl+L to clear screen and redraw shell prompt
       if (shellWriter.current) {
-        shellWriter.current.write("\x0c").catch(err => {
+        shellWriter.current.write("\x0c").catch((err: any) => {
           console.error("Failed to clear terminal process prompt:", err);
         });
       }

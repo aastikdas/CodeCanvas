@@ -40,14 +40,13 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TemplateFile, TemplateItem } from "@/features/playground/lib/path-to-json";
+import { TemplateFile, TemplateItem, TemplateFolder } from "@/features/playground/types";
 import TemplateFileTree from "@/features/playground/components/template-file-tree";
 import PlaygroundEditor from "@/features/playground/components/playground-editor";
 import { useWebContainer } from "@/features/webContainers/hooks/useWebContainer";
 import WebContainerPreview from "@/features/webContainers/components/WebContainerPreview";
 import { Spinner } from "@/components/ui/spinner";
 import { findFilePath } from "@/features/playground/lib";
-import { TemplateFolder } from "@/features/playground/types";
 import ToggleAI from "@/features/playground/components/toggle-ai";
 import { useAISuggestions } from "@/features/AI/hooks/useSuggestionAI";
 const Page = () => {
@@ -541,7 +540,7 @@ const Page = () => {
 
                   {/* Editor area */}
                   <div className="flex-1 h-full">
-                    <ResizablePanelGroup direction="horizontal" className="h-full">
+                    <ResizablePanelGroup orientation="horizontal" className="h-full">
                         <ResizablePanel defaultSize={isPreviewVisible?50:100}>
                           <PlaygroundEditor
                             activeFile={activeFile}

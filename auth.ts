@@ -30,7 +30,7 @@ export const { handlers, signIn, signOut, auth: nextAuthAuth } = NextAuth({
                                 token_type: account.token_type,
                                 scope: account.scope,
                                 id_token: account.id_token,
-                                session_state: account.session_state
+                                session_state: account.session_state as string | undefined
                             },
                         },
                     },
@@ -59,7 +59,7 @@ export const { handlers, signIn, signOut, auth: nextAuthAuth } = NextAuth({
                         token_type: account.token_type,
                         scope: account.scope,
                         id_token: account.id_token,
-                        session_state: account.session_state,
+                        session_state: account.session_state as string | undefined,
                     },
                 });
             }
@@ -77,7 +77,7 @@ export const { handlers, signIn, signOut, auth: nextAuthAuth } = NextAuth({
 
         token.name = existingUser.name;
         token.email = existingUser.email;
-        token.role = existingUser.role;
+        token.role = (existingUser as any).role;
 
         return token;
         },
