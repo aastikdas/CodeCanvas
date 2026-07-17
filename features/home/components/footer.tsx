@@ -14,7 +14,7 @@ export function Footer() {
 
         <div className="flex items-center gap-6">
           <Link
-            href="https://github.com"
+            href="https://github.com/aastikdas"
             target="_blank"
             rel="noopener noreferrer"
             className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 text-sm"
@@ -23,7 +23,7 @@ export function Footer() {
             <span>GitHub</span>
           </Link>
           <a
-            href="mailto:support@codecanvas.com"
+            href="mailto:aastikdas126@gmail.com"
             className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors flex items-center gap-1.5 text-sm"
           >
             <Mail className="w-4 h-4" />

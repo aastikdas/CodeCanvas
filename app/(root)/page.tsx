@@ -37,7 +37,7 @@ export default function Home() {
             Everything you need to write, run, and collaborate on code inside your browser with artificial intelligence.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             {
@@ -79,8 +79,8 @@ export default function Home() {
           ].map((feat, idx) => {
             const Icon = feat.icon;
             return (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="group p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30 hover:bg-white dark:hover:bg-zinc-900/60 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out"
               >
                 <div className={`p-3 rounded-xl w-fit ${feat.color} group-hover:scale-110 transition-transform duration-300`}>
@@ -129,8 +129,8 @@ export default function Home() {
               color: "bg-emerald-500/10 text-emerald-500"
             }
           ].map((test, idx) => (
-            <div 
-              key={idx} 
+            <div
+              key={idx}
               className="p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30 hover:border-foreground/10 dark:hover:border-foreground/20 hover:shadow-lg transition-all duration-300"
             >
               <div className="flex items-center gap-4 mb-4">
@@ -160,12 +160,12 @@ export default function Home() {
             <p className="mt-4 text-zinc-500 dark:text-zinc-400 leading-relaxed">
               Have questions about WebContainers, starting a playground, or connecting a repository? Our support team is here to help you solve any issues and get you coding in no time.
             </p>
-            
+
             <div className="mt-8 flex flex-col sm:flex-row gap-6">
               <div className="flex flex-col">
                 <span className="text-xs text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-semibold">Support Email</span>
-                <a href="mailto:support@codecanvas.com" className="text-lg font-semibold text-primary hover:underline mt-1">
-                  support@codecanvas.com
+                <a href="mailto:aastikdas126@gmail.com" className="text-lg font-semibold text-primary hover:underline mt-1">
+                  aastikdas126@gmail.com
                 </a>
               </div>
               <div className="flex flex-col">
@@ -176,7 +176,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex justify-center lg:justify-end">
             <div className="w-full max-w-md p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30 shadow-md">
               <div className="flex items-center gap-3 mb-4">
@@ -194,7 +194,7 @@ export default function Home() {
                   <span>Support agents online</span>
                 </div>
                 <Button className="w-full" variant="outline" asChild>
-                  <a href="mailto:support@codecanvas.com">Contact Support</a>
+                  <a href="mailto:aastikdas126@gmail.com">Contact Support</a>
                 </Button>
               </div>
             </div>

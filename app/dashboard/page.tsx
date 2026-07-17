@@ -1,6 +1,6 @@
 import { deleteProjectById, duplicateProjectById, editProjectById } from "@/features/dashboard/actions";
 import AddNewButton from "@/features/dashboard/components/add-new-btn";
-import AddRepo from "@/features/dashboard/components/add-repo";
+// import AddRepo from "@/features/dashboard/components/add-repo";
 import ProjectTable from "@/features/dashboard/components/project-table";
 
 // import ProjectTable from "@/features/dashboard/components/project-table";
@@ -30,7 +30,7 @@ const DashboardMainPage = async () => {
     <div className="flex flex-col justify-start items-center min-h-screen mx-auto max-w-7xl px-4 py-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
         <AddNewButton />
-        <AddRepo />
+        {/* <AddRepo /> */}
       </div>
       <div className="mt-10 flex flex-col justify-start items-start w-full">
         <div className="flex justify-between items-center w-full mb-6">
